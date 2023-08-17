@@ -1,0 +1,181 @@
+<html>
+
+<head>
+      <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+      <link rel="stylesheet" type="text/css" href="./style.css">
+      <title>CS 747: Programming Assignment 3</title>
+</head>
+
+<body data-new-gr-c-s-check-loaded="14.1073.0" data-gr-ext-installed="">
+      <br>
+
+      <center>
+            <h2>
+                  CS 747: Programming Assignment 3
+            </h2>
+            <h3>Total marks: 15</h3>
+            <h3>(Prepared by Thomas Jacob and Bhavini Jeloka)</h3>
+      </center>
+      <br>
+      <p>This assignment tests your understanding of the concepts taught in class and its applications to real world problems. In particular, we examine one of the most popular domains: <b>autonomous driving</b>. You will have to come up with a controller to drive a car, and are free to use any approach: coding it up yourself and/or learning with value function-based approaches and/or using policy search.</p>
+
+	<p>There are two tasks in this assignment. In Task 1, you will construct a controller that can navgiate a car out of a parking lot on a winter night. The surroundings are icy and the parking lot is also close to freezing. It is your responsibility to get the car out of this situation and on the road safely. Task 2 is along similar lines but you find yourself in a stickier situation. The parking lot is now filled with pools of mud from a cold winter storm. You must dodge these obstacles and find a safe way out.</p>
+
+      <p>All the code you write for this assignment must be in Python
+            3.8.10. The libraries that you require come installed with the docker image that
+            has been shared for the course, and are already imported in the files you need to complete.
+      </p>
+
+
+
+
+<h3>Code Structure</h3>
+
+<p><a href="./gym_driving_dir.tar.gz">This compressed directory</a> has all the files and folders that are required for the assignment (we acknowledge Wesley Hsieh for a <a href="https://github.com/WesleyHsieh/gym-driving">base simulator</a> that our assignment is built upon). For the most part, you do not need to worry about these files. It is, however, advised that you read through <code>driving_env.py</code> in the <code>envs</code> folder to understand how the <code>_step</code> function works. In short, it returns the reward, termination condition, the next state and a boolean flag to indicate the success of the episode (it also returns a dictionary with additional information that can be ignored). In addition to the above, the <code>_reset</code> function of the simulator resets the environment and returns the initial state of the car.</p>
+                  <p> We have provided <code>run_simulator.py</code> to run simulations and visually see the working of your controller, which you'll have to submit as described later. This code has been provided with 10 random seeds that evaluate your controllers for a fixed few environments (different initial states of your car and different positions of the obstacles in Task 2) and outputs the execution time.
+            The only file you need to
+            edit is <code>run_simulator.py</code>. Do not edit any other files. 
+            <p>
+            For evaluation, we will use another set of environments in the autograder, and use its score as is for the evaluation. See the exact details below. </p>
+</p>
+
+
+<h3>Task 1: The Parking Lot Problem </h3>
+
+<p>As mentioned above, your task is to navigate your 50 x 25 car out of a 700 x 700 square grid. It must exit onto the road whose entrance has its centre located at (350, 0). This grid is centred at the origin with the coordinate axes shown below (screen size: 1000 x 1000). It is an episodic task that begins with your car initialised at a random position and orientation; the episode ends when you navigate out or bump into a wall (or pit in Task 2). We also cap episodes to a total of 1000 time steps.</p>
+
+      <p style="text-align:center;">
+      <img src="task_1.png" alt="Task 1" width="300" height="300"> 
+</p>
+<br>
+
+
+<p>Your car has 4 state features: the x and y position coordinates, the velocity and the heading angle. In order to control the state, you have two independent control inputs <b>steer</b> and <b>acceleration</b> that take the following discrete values.
+
+
+  
+<br>
+ <table border="1" style="margin-left:auto;margin-right:auto;">
+  <tr>
+    <th></th>
+    <th>Control Input: Steer</th>
+  </tr>
+  <tr>
+    <td>0</td>
+    <td>-3 degrees</td>
+</tr>
+<tr>
+    <td>1</td>
+    <td>0 degrees</td>
+</tr>
+<tr>
+    <td>2</td>
+    <td>3 degrees</td>
+</tr>
+</table>           
+<br>
+<br>
+<table border="1" style="margin-left:auto;margin-right:auto;">
+  <tr>
+    <th></th>
+    <th>Control Input: Acceleration</th>
+  </tr>
+  <tr>
+    <td>0</td>
+    <td>-5 units</td>
+</tr>
+<tr>
+  <td>1</td>
+    <td>-3.95 units</td>
+</tr>
+<tr>
+    <td>2</td>
+    <td>0 units</td>
+</tr>
+<tr>
+    <td>3</td>
+    <td>3.95 units</td>
+</tr>
+  <tr>
+    <td>4</td>
+    <td>5 units</td>
+</tr>
+</table>
+<br>
+
+The class <code>Task1</code> has been created for you inside the <code>run_simulator.py</code> file. The <code>next_action</code> function should determine the action to be taken in order to reach the next state while the function <code>controller_task1</code> integrates these sequences of actions to complete the entire navigation task. Please read the comments in the code in order to understand the components that can and cannot be modified under  <code>controller_task1</code>. You can come up with any technique to reach the road and marks will be given as long as your method works for all random initialisations that we will test it for. Feel free to add helper functions and other initialisations to support your code.
+</p>
+
+<h3>Task 2: The Parking Lot Problem Intensifies</h3>
+<p>Building on the first task, your goal now is still to navigate your 50 x 25 car out of a 700 x 700 square grid. It must exit onto the road whose entrance has its centre located at (350, 0). However, this time, the road is narrower and the parking lot is filled with 4 randomly located pits of mud (with a size of 100 x 100 each). The parking lot is once again centred at the origin with the coordinate axes shown below (screen size: 1000 x 1000). </p>
+<p style="text-align:center;">
+      <img src="task_2.png" alt="Task 2" width="300" height="300"> 
+</p>
+<br>
+
+<p>The class <code>Task2</code> has been created for you inside the <code>run_simulator.py</code> file. States and actions are as in Task 1. The <code>next_action</code> function should determine the action to be taken in order to reach the next state while the function <code>controller_task2</code> integrates these sequences of actions to complete the entire navigation task. Please read the comments in the code in order to understand the components that can and cannot be modified under  <code>controller_task2</code>. You can come up with any technique to reach the road and marks will be given as long as your method works for all random initialisations that we will test it for. Feel free to add helper functions and other initialisations to support your code. You will need to brainstorm on obstacle avoidance manoeuvres.  
+</p>
+
+
+<h3>Running the Code </h3>
+
+
+<p>Since it is important for you to be able to visualise your
+agent's behaviour as you develop it, we had provided a visual interface.
+However, this might not run as is on the docker, and you will have to
+run the code on your local system so that a new game window is allowed
+to open with the <code>render_mode</code> flag. Without the flag,
+however, since there will be no rendering, you can run your code in the
+docker container. If you want to run on your local system, you just have
+to run <code> pip install -e . </code> from the root directory <code>
+  gym_driving_dir </code> so that the dependencies from <code> setup.py
+</code> get installed automatically before you run the scripts. To run
+on docker, however, you will need to follow additional steps. Firstly,
+run <code> pip install -e . </code> from the root directory <code>
+  gym_driving_dir </code> as before (do not worry if some warnings are
+given). From within the docker, running OpenCV throws an error  <code>
+  ImportError: libGL.so.1: cannot open shared object file: No such file or
+  directory. </code> To circumvent this, you have to install libgl1 by
+<code> apt-get update && apt-get install libgl1 </code>.</p>
+
+<p>To run the code you have written run <code> python
+  run_simulator.py --task T1/T2 --render_mode </code> (use this while
+running code in your local system as mentioned) to visualise the
+simulation and <code> python run_simulator.py --task T1/T2 </code>(only
+this command will work inside docker) otherwise from the <code>
+  simulator </code> directory.</p>
+
+<p>Now to verify the code against the 10 random seeds run
+<code> python autograder.py --task T1/T2 </code> from the <code>
+  simulator </code> directory. To pass the autograder, you should not put
+any additional print statements in the code (comment them out if you
+used them for debugging).</p>
+
+<h3>Evaluation </h3>
+
+      <p>5 marks are reserved for the correctness and performance of your code on each of the two tasks, and 5 marks for your report.</p>
+
+      <p>For each task, 2.5 marks are for your performance on the given (10) random seeds, and 2.5 marks will be for unseen (10) random seeds. The 2.5 marks are divided into 1 mark for successfully exiting the parking lot on all runs within 1000 time steps. The remaining 1.5 marks will depend on the number of random seeds for which you exit within a shorter span, which is coded into the autograder. Thus, for example, if your agent is always successful, and clear 8 of the 10 initialisations within the specified threshold, you will receive (1 + 8 * 0.15 = 2.2) marks out of 2.5.</p>
+
+      <p>Unlike the previous assignments, you have been given a free hand to come up with your controller. Hence, we would like to see a clear presentation of your approach. Include a file named <code>report.pdf</code> that spells out the ingredients of your solution, any intermediate experiments that may have guided your decisions, learning curves if you did use some form of learning/parameter tuning, and so on. If your report is not sufficiently clear and informative, you will stand to lose marks. </p>
+
+<p>The TAs and instructor may look at your source code and notes to corroborate the results obtained by your program, and may also call you to a face-to-face session to explain your code.</p>
+
+      <h3>Submission</h3>
+      <p>You have to submit one tar.gz file with the name (roll_number).tar.gz. Upon extracting, it must produce a folder with your roll number as its name. It must contain a <code>report.pdf</code> - the report as explained above, and one code file: <code>run_simulator.py</code>. You must also include a <code>references.txt</code> file if you have referred to any resources while working on this assignment (see the section on Academic Honesty on the course web page).</p>
+
+
+<h3>Deadline and Rules</h3>
+
+<p>Your submission is due by 11.55 p.m., Sunday, November 6. Finish working on your submission well in advance, keeping enough time to test your code and upload to Moodle.</p>
+
+<p>Your submission will not be evaluated (and will be given a score of zero) if it is not uploaded to Moodle by the deadline. Do not send your code to the instructor or TAs through any other channel. Requests to evaluate late submissions will not be entertained.</p>
+
+<p>Your submission will receive a score of zero if your code does not execute on cs747 docker container. To make sure you have uploaded the right version, download it and check after submitting (but before the deadline, so you can handle any contingencies before the deadline lapses).</p>
+
+<p>You are expected to comply with the rules laid out in the "Academic Honesty" section on the course web page, failing which you are liable to be reported for academic malpractice. </p>
+
+
+</body>
+
+</html>

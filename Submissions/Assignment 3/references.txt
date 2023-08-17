@@ -1,0 +1,1 @@
+In my initial attempt I had implemented Linear Sarsa with Tile Encoding for which I had refered the book and the slides. But finally I gave up on it and implemented using simple condition checks and hence did not use any references for that.

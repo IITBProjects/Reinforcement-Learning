@@ -1,0 +1,214 @@
+
+<!-- saved from url=(0096)https://www.cse.iitb.ac.in/~shivaram/teaching/old/cs747-a2022/pa-1/programming-assignment-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+      
+      <link rel="stylesheet" type="text/css" href="./CS 747_ Programming Assignment 1_files/style.css">
+      <title>CS 747: Programming Assignment 1</title>
+</head>
+
+<body data-new-gr-c-s-check-loaded="14.1073.0" data-gr-ext-installed="">
+      <br>
+
+      <center>
+            <h2>
+                  CS 747: Programming Assignment 1
+            </h2>
+            <h3>Total marks: 15</h3>
+            <h3>(Prepared by Vibhav Aggarwal and Sheel Shah)</h3>
+      </center>
+      <br>
+
+      <p>This assignment tests your understanding of the regret
+            minimisation algorithms discussed in class, and ability to
+            extend them to different scenarios. There are three tasks,
+            each worth 5 marks. To begin, in Task 1, you will
+            implement UCB, KL-UCB, and Thompson Sampling, more or less
+            identical to the versions discussed in class. Task 2
+            involves coming up with an algorithm for <i>batched</i>
+            sampling. The idea is that at every decision making step,
+            the algorithm must specify an entire batch of arms to pull
+            (for example, if the batch size is 100, it could be split
+            as perhaps 25 pulls for arm 1, 55 pulls for arm 2, and 20
+            pulls for arm 3). All these pulls are performed and the
+            results returned to the algorithm in aggregate before its
+            next batch of pulls. In Task 3, you need to come up with
+            an algorithm for the case when the horizon is <i>equal</i>
+            to the number of arms, but it is given that the arm means
+            are distributed uniformly (so if the horizon is 100, the
+            arm means are a permutation of [0, 0.01, 0.02, ...,
+            0.99]). The theory developed in class applies meaningfully
+            only when the horizon is large; how would you deal with
+            shorter horizons? The fact that the bandit instance comes
+            from a restricted family could possibly help.</p>
+
+      <p>All the code you write for this assignment must be in Python
+            3.8.10. The only libraries you may use are Numpy v1.21.0 (to
+            work with vectors and matrices) and Matplotlib (for generating
+            plots). All of these come installed with the docker image that
+            has been shared for the course, and are already imported in the files you need to complete.
+      </p>
+
+
+      <br>
+      <h3>Code Structure</h3>
+
+      <p><a href="https://www.cse.iitb.ac.in/~shivaram/teaching/old/cs747-a2022/pa-1/code.tar.gz">This compressed directory</a> has all
+                  the files
+                  required. <code>bernoulli_bandit.py</code> defines
+                  the BernoulliBandit which, strictly speaking, you do
+                  not need to worry about. It is, however, advised
+                  that you read through the code to understand how
+                  the <code>pull</code> and <code>batch_pull</code>
+                  functions work. We have also
+                  provided <code>simulator.py</code> to run
+                  simulations and generate plots, which you'll have to
+                  submit as described later. Finally, there's
+            <code>autograder.py</code> which evaluates your algorithms
+            for a fixed few bandit instances, and outputs the score
+            you would have received if we were evaluating your
+            algorithms on these instances. The only files you need to
+            edit are <code>task1.py</code>, <code>task2.py</code>,
+            and <code>task3.py</code>. Do not edit any other
+            files. You are allowed to comment/uncomment the final few
+            lines of <code>simulator.py</code>. It is strongly
+            recommended that in any code that you write, which
+            involves generating random numbers, you fix the seed for
+            your generation process. The consequence is that your code
+            will produce identical results each time (so long as we
+            call it from an outer loop that also has its random seed
+            fixed). This is a good practice while running experiments
+            with programs.</p>
+	    
+	    <p>For evaluation, we will use another set of bandit
+              instances in the autograder, and use their scores as is
+              for 80% of the evaluation. For a particular test
+              instance, the pass/fail criterion of the autograder is
+              determined based on your regret lying within 1.5 times
+              of the regret of our reference implementation. If your code
+              produces an error, it will directly receive a 0 score in
+              the autograded tasks.  It will also get 0 marks if for
+              any subtask whatsoever, the autograder takes over 20
+              minutes to run the subtask. The remaining part of the
+              evaluation will be done based on your report, which
+              includes plots, and explanation of your algorithms. See
+              the exact details below.</p>
+
+      <p></p>
+
+      <h3>Problem statements for tasks</h3>
+
+      <h4>Task 1</h4>
+
+      <p>In this first task, you will implement the sampling algorithms:
+            (1) UCB, (2) KL-UCB, and (3) Thompson
+            Sampling. This task is straightforward based on the class
+            lectures. The instructions below tell you about the code you are
+            expected to write.</p>
+
+      <p>Read <code>task1.py</code>. It contains a sample
+            implementation of epsilon-greedy for you to understand
+            the <code>Algorithm</code> class. You have to edit
+            the <code>__init__</code> function to create any state
+            variables your algorithm needs, and
+            implement <code>give_pull</code>
+            and <code>get_reward</code>. <code>give_pull</code> is
+            called whenever it is the algorithm's decision to pick an
+            arm and it must return the index of the arm your algorithm
+            wishes to pull (lying in 0, 1, ...
+            self.num_arms-1). <code>get_reward</code> is called
+            whenever the environment wants to give feedback to the
+            algorithm: your code can use this feedback to update the
+            data structures maintained by your agent. It will be
+            provided the <code>arm_index</code> of the arm and
+            the <code>reward</code> seen (0/1). Note that the
+            <code>arm_index</code> will be the same as the one returned by the <code>give_pull</code> function called earlier. For more
+            clarity, refer to <code>single_sim</code> function in <code>simulator.py</code>.</p>
+      
+      <p>Once done with the implementations, you can run <code>simulator.py</code> to see the regrets over different horizons. Save
+            the generated plot and add it to your report, with suitable commentary (ideally 4-5 lines describing what you see, what issues you faced, any surprising patterns). You may also run <code>autograder.py</code> to evaluate
+            your algorithms on the provided test instances.</p>
+
+      <h4>Task 2</h4>
+
+      <p>We describe the problem statement that was briefly discussed completely now. The algorithm is given the number
+            of arms of the bernoulli bandit <code>num_arms</code>, a <code>horizon</code> and a <code>batch_size</code>. The <code>give_pull</code> function will be
+            called <code>horizon/batch_size</code> times (which can be assumed to be an integer). In every call, it must return the
+            next <code>batch_size</code> number of pulls the algorithm wishes to make. The function must do so in a specific
+            format: it has to return two lists, one containing the arm indices that it wishes to pull, and the other
+            containing the number of times each of those indices must be pulled. For example, in a 10-armed bandit instance with batch_size
+            20, a possible return of the <code>give_pull</code> function could be ([2, 4, 9], [10, 4, 6]). Note that your function
+            should generalize to arbitrary batch_sizes, as long as the given batch_size is a factor of the horizon (the batch_size could be just 1, or it could also be of the order of the horizon). The autograder/simulator
+            will proceed and pull these arms according to their respective counts, and then provide feedback to the
+            <code>get_reward</code> function. The feedback is provided
+            as a dict, where the keys are the arm indices, and the
+            rewards are a numpy array of 0s and 1s that were seen. So
+            a possible input (<code>arm_rewards</code>) to
+            the <code>get_reward</code> function for the above batch
+            pull could be {2: np.array([1, 1, 1, 0, 1, 1, 0, 1, 0,
+            1]), 4: np.array([1, 1, 0, 0]), 9: np.array([0, 1, 0, 1,
+            0, 0])}. Again, you can read <code>single_batch_sim</code>
+            for more clarity. The regret is calculated over all the
+            pulls over the horizon.</p>
+
+      <p>Once done with your implementation, you can run <code>simulator.py</code> to see the regrets for a fixed horizon over
+            different batch sizes. Save the generated plot and add it to your report, with apt captioning. Take 4-5 lines (or more) to explain the
+            trend you see, and justify your choice of the distribution of pulls in a given <code>batch_size</code>. You may also
+            run <code>autograder.py</code> to evaluate your algorithms on the provided test instances.</p>
+
+
+      <h4>Task 3</h4>
+      <p>This task involves dealing with a bandit instance where the horizon is equal to the number of arms. So, for example, if there are 100 arms, then you are only allowed to pull 100 times. However, you are given that the arm means are distributed regularly (in arithmetic progression) between 0 and (1 - 1/numArms).</p>
+
+      <p>You need to come up with an algorithm to handle this situation effectively: can you do better than sampling each arm once? Implement your algorithm by editing the <code>task3.py</code> file. The APIs you need to implement are essentially the same as <code>task1.py</code>.</p>
+
+      <p>Once again, you can use <code>simulator.py</code> to see regrets as a function of horizon. You may also run <code>autograder.py</code> to evaluate your algorithm. Note that even if your algorithm passes the autograder tests, it might fail on the undisclosed tests that are used for evaluation. So you must not hardcode your method to make it work for only the given test instances. For this task, you will again plot regret against horizon (which is the same as the number of arms).</p>
+
+      <h3>Report</h3>
+      <p>Your report needs to have all the plots that <code>simulator.py</code> generates. There are 5 plots in total (3 for task 1 and 1 each for tasks 2 and 3). You do not need to include the epsilon-greedy plot in your report. In addition, you need to explain your method for each task. For task 1, explain your code for the three algorithms, and for tasks 2 and 3 explain your approach to the problem and provide justification to the trend seen in the plots.</p>
+      
+      <h3>Submission</h3>
+      <p>You have to submit one tar.gz file with the name (roll_number).tar.gz. Upon extracting, it must produce a folder with your roll number as its name. It must contain a <code>report.pdf</code> - the report as explained above, and three code files: <code>task1.py</code>, <code>task2.py</code>, <code>task3.py</code>. You must also include a <code>references.txt</code> file if you have referred to any resources while working on this assignment (see the section on Academic Honesty on the course web page).</p>
+
+      <h3>Evaluation</h3>
+      <p>The assignment is worth 15 marks. For every task, 4 marks are for the code and will be evaluated by the autograder, and 1 mark is for the report. The autograder used for evaluating will use a different set of test instances from the ones provided. Note that runtime errors in the script will lead to 0 marks for that test instance. You will also be given 0 marks for a test instance if your code takes more than 20 minutes to run for a test instance.</p>
+
+
+<p>For tasks 1 and 2, you can expect that the number of arms in the
+  bandit instances used in our undisclosed test cases will be at most
+  30, and similarly the horizon at most 10,000. (Note that longer
+  horizons are used in your plots, which might take some time to
+  generate). For Task 2, the batch size could be any legal number
+  (that is, which perfectly divides the horizon) between 1 and the
+  horizon. In Task 3, the horizon (equal to the number of arms) will
+  be at most 10,000.</p>
+
+      <p>To test your implementation against the given testcases, run the autograder as follows: <code>python3 autograder.py --task TASK</code>.
+            <br>Here <code>TASK</code> can be one of: <code>1</code>, <code>2</code>, <code>3</code>, or <code>all</code>. If <code>TASK</code> is <code>1</code>, then you also need to provide another argument: <code>--algo ALGO</code>, where <code>ALGO</code> can be one of: <code>ucb</code>, <code>kl_ucb</code>, <code>thompson</code>, or <code>all</code>.
+      </p>
+
+      <h3>Deadline and Rules</h3>
+      <p>Your submission is due by 11.55 p.m., Saturday, September 10. Finish
+            working on your submission well in advance, keeping enough time to
+            test your code, generate your data, compile the results, and upload to Moodle.</p>
+
+      <p>Your submission will not be evaluated (and will be given a score of
+            zero) if it is not uploaded to Moodle by the deadline. Do not send
+            your code to the instructor or TAs through any other
+            channel. Requests to evaluate late submissions will not be
+            entertained.</p>
+
+      <p>Your submission will receive a score of zero if your code does
+            not execute on the cs747 docker container. To make sure you have
+            uploaded the right version, download it and check after
+            submitting (but well before the deadline, so you can handle any
+            contingencies before the deadline lapses).
+
+      </p>
+      <p>You are expected to comply with the rules laid out in the "Academic
+            Honesty" section on the course web page, failing which you are liable
+            to be reported for academic malpractice.</p>
+
+
+
+
+</body></html>

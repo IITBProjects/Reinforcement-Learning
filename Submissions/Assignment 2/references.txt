@@ -1,0 +1,1 @@
+For the implementation of linear programming using Pulp,I used the resources provided and some other online tutorials.Other than this, I did not refer to any extra resources.
